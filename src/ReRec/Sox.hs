@@ -9,13 +9,17 @@ import System.Process.Extra
 
 
 type Seconds = Double
+type Hz = Int
+type ChannelCount = Int
+type Source = [String]
+type Destination = String -- a 'FilePath' or "--default-device"
 type Filter = [String]
 
 data Sox = Sox
-  { _soxSources
-      :: [String]
-  , _soxFilters
-      :: [String]
+  { _soxSource
+      :: Source
+  , _soxFilter
+      :: Filter
   }
   deriving Show
 
@@ -23,17 +27,13 @@ makeLenses ''Sox
 
 
 runSox
-  :: Sox
-  -> String  -- ^ destination, i.e. a FilePath or "--default-device"
-  -> IO (Async ())
+  :: Sox -> Destination -> IO (Async ())
 runSox (Sox {..}) destination = execute "sox" args
   where
-    args = _soxSources ++ [destination] ++ _soxFilters
+    args = _soxSource ++ [destination] ++ _soxFilter
 
 runSox_
-  :: Sox
-  -> String  -- ^ destination, i.e. a FilePath or "--default-device"
-  -> IO ()
+  :: Sox -> Destination -> IO ()
 runSox_ sox destination = do
   thread <- runSox sox destination
   wait thread
@@ -55,7 +55,7 @@ files filePaths = Sox ("-M":filePaths) []
 
 filter
   :: Filter -> Sox -> Sox
-filter xs = over soxFilters (++ xs)
+filter xs = over soxFilter (++ xs)
 
 
 getDuration
@@ -63,5 +63,9 @@ getDuration
 getDuration filePath = readProcessLn "soxi" ["-D", filePath]
 
 getChannelCount
-  :: FilePath -> IO Int
+  :: FilePath -> IO ChannelCount
 getChannelCount filePath = readProcessLn "soxi" ["-c", filePath]
+
+getSampleRate
+  :: FilePath -> IO Hz
+getSampleRate filePath = readProcessLn "soxi" ["-r", filePath]
