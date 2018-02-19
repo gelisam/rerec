@@ -3,7 +3,8 @@ module ReRec.Audio where
 
 import Control.Concurrent.Async
 
-import System.Process.Async
+import ReRec.Sox (Sox, runSox, runSox_)
+import qualified ReRec.Sox as Sox
 
 
 type Seconds = Double
@@ -11,14 +12,16 @@ type Seconds = Double
 class Audio a where
   load
     :: FilePath -> IO a
-  sox
-    :: String  -- ^ destination, i.e. a FilePath or "--default-device"
-    -> a
-    -> IO (Async ())
+  toSox
+    :: a -> Sox
 
 instance Audio FilePath where
   load = pure
-  sox destination source = execute "sox" [source, destination]
+  toSox = Sox.file
+
+instance Audio Sox where
+  load = pure . Sox.file
+  toSox = id
 
 
 -- cancel the 'Async ()' to stop the recording
@@ -26,10 +29,7 @@ record
   :: Audio a
   => FilePath -> IO (Async (), Async a)
 record filePath = do
-  recordingThread <- execute "sox"
-    [ "--default-device"  -- source: the microphone
-    , filePath            -- destination: the file
-    ]
+  recordingThread <- runSox Sox.rec filePath
   loadingThread <- async $ do
     wait recordingThread
     load filePath
@@ -38,14 +38,12 @@ record filePath = do
 save
   :: Audio a
   => FilePath -> a -> IO ()
-save filePath x = do
-  thread <- sox filePath x
-  wait thread
+save filePath x = runSox_ (toSox x) filePath
 
 play
   :: Audio a
   => a -> IO (Async ())
-play = sox "--default-device"
+play x = runSox (toSox x) "--default-device"
 
 play_
   :: Audio a
