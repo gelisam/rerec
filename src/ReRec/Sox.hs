@@ -7,6 +7,8 @@ import Control.Lens
 import System.Process.Async
 
 
+type Filter = [String]
+
 data Sox = Sox
   { _soxSources
       :: [String]
@@ -48,3 +50,7 @@ file filePath = Sox [filePath] []
 files
   :: [FilePath] -> Sox
 files filePaths = Sox ("-M":filePaths) []
+
+filter
+  :: Filter -> Sox -> Sox
+filter xs = over soxFilters (++ xs)
