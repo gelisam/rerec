@@ -1,18 +1,21 @@
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RecordWildCards, TemplateHaskell #-}
 module ReRec.Sox where
 
 import Control.Concurrent.Async
+import Control.Lens
 
 import System.Process.Async
 
 
 data Sox = Sox
-  { soxSources
+  { _soxSources
       :: [String]
-  , soxFilters
+  , _soxFilters
       :: [String]
   }
   deriving Show
+
+makeLenses ''Sox
 
 
 runSox
@@ -21,7 +24,7 @@ runSox
   -> IO (Async ())
 runSox (Sox {..}) destination = execute "sox" args
   where
-    args = soxSources ++ [destination] ++ soxFilters
+    args = _soxSources ++ [destination] ++ _soxFilters
 
 runSox_
   :: Sox
