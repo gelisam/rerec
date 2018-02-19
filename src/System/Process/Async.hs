@@ -18,6 +18,7 @@ execute cmd args = do
       Right () -> pure ()
       Left e -> do
         stopProcess process
+        throwIO e
 
 execute_ :: FilePath -> [String] -> IO ()
 execute_ cmd args = do
