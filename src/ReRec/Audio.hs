@@ -7,8 +7,6 @@ import ReRec.Sox (Sox, runSox, runSox_)
 import qualified ReRec.Sox as Sox
 
 
-type Seconds = Double
-
 class Audio a where
   load
     :: FilePath -> IO a

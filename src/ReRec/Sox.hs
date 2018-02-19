@@ -5,8 +5,10 @@ import Control.Concurrent.Async
 import Control.Lens
 
 import System.Process.Async
+import System.Process.Extra
 
 
+type Seconds = Double
 type Filter = [String]
 
 data Sox = Sox
@@ -54,3 +56,12 @@ files filePaths = Sox ("-M":filePaths) []
 filter
   :: Filter -> Sox -> Sox
 filter xs = over soxFilters (++ xs)
+
+
+getDuration
+  :: FilePath -> IO Seconds
+getDuration filePath = readProcessLn "soxi" ["-D", filePath]
+
+getChannelCount
+  :: FilePath -> IO Int
+getChannelCount filePath = readProcessLn "soxi" ["-c", filePath]
