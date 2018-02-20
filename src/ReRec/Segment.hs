@@ -1,8 +1,10 @@
-{-# LANGUAGE RecordWildCards, TemplateHaskell #-}
+{-# LANGUAGE RecordWildCards, TemplateHaskell, TypeFamilies #-}
 module ReRec.Segment where
 
 import Control.Lens
 import Data.List
+
+import Camera
 import ReRec.Audio
 import ReRec.Sox as Sox
 
@@ -22,6 +24,10 @@ data Segment = Segment
   } deriving Show
 
 makeLenses ''Segment
+
+instance Camera Segment where
+  type Vector Segment = Seconds
+  moveCamera dx = over segmentOffset (+ dx)
 
 instance Audio Segment where
   load filePath = do
