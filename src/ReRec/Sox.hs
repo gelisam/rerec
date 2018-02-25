@@ -1,71 +1,125 @@
-{-# LANGUAGE RecordWildCards, TemplateHaskell #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, LambdaCase, RecordWildCards, TemplateHaskell, ViewPatterns #-}
+-- |
+-- This module is intended to be imported qualified.
 module ReRec.Sox where
 
 import Control.Concurrent.Async
-import Control.Lens
+import Data.Foldable
+import Data.List
+import Data.Map (Map)
+import Data.Semigroup
+import qualified Data.Map as Map
 
 import System.Process.Async
-import System.Process.Extra
+import ReRec.Types
 
 
-type Seconds = Double
-type Hz = Int
-type ChannelCount = Int
-type Source = [String]
-type Destination = String -- a 'FilePath' or "--default-device"
-type Filter = [String]
+newtype Source = Source
+  { unSource :: [String]
+  } deriving Show
 
-data Sox = Sox
-  { _soxSource
-      :: Source
-  , _soxFilter
-      :: Filter
-  }
-  deriving Show
+newtype Destination = Destination
+  { unDestination :: [String]
+  } deriving Show
 
-makeLenses ''Sox
+newtype Filter = Filter
+  { unFilter :: [String]
+  } deriving (Monoid, Semigroup, Show)
 
 
-runSox
-  :: Sox -> Destination -> IO (Async ())
-runSox (Sox {..}) destination = execute "sox" args
+instance Semigroup Source where
+  Source xs1 <> Source xs2 = Source
+                           $ "-M"  -- 1 (or 2) channel per source
+                           : dropWhile (== "-M") xs1
+                          <> dropWhile (== "-M") xs2
+
+
+fileSource
+  :: FilePath -> Source
+fileSource filePath = Source [filePath]
+
+microphoneSource
+  :: Source
+microphoneSource = Source ["--default-device"]
+
+silentSource
+  :: Source
+silentSource = Source ["--null"]
+
+silentSourceMatchingSampleRate
+  :: Hz -> Source
+silentSourceMatchingSampleRate rate = Source ["--rate", show rate, "--null"]
+
+
+fileDestination
+  :: FilePath -> Destination
+fileDestination filePath = Destination [filePath]
+
+speakersDestination
+  :: Destination
+speakersDestination = Destination ["--default-device"]
+
+
+delayFilter
+  :: Map Channel Seconds -> Filter
+delayFilter (Map.null -> True) = Filter []
+delayFilter delays = Filter
+                   $ "delay"
+                   : map (show . delay) [1..lastChannel]
   where
-    args = _soxSource ++ [destination] ++ _soxFilter
+    lastChannel :: Channel
+    lastChannel = maximum . Map.keys $ delays
 
-runSox_
-  :: Sox -> Destination -> IO ()
-runSox_ sox destination = do
-  thread <- runSox sox destination
+    delay :: Channel -> Seconds
+    delay channel = Map.findWithDefault 0 channel delays
+
+remixFilter
+  :: Map Channel Channel -> Filter
+remixFilter (Map.null -> True) = Filter []
+remixFilter destinations = Filter
+                         $ "remix"
+                         : "-m"  -- "manual" volumes, otherwise it gets reduced
+                         : map (encode . remix) [1..lastChannel]
+  where
+    lastChannel :: Channel
+    lastChannel = maximum . toList $ destinations
+
+    remix :: Channel -> [Channel]
+    remix destination = toList
+                      . Map.keys
+                      . Map.filter (== destination)
+                      $ destinations
+
+    encode :: [Channel] -> String
+    encode [] = "0"
+    encode xs = intercalate "," . map show $ xs
+
+reverseFilter
+  :: Filter
+reverseFilter
+  = Filter ["reverse"]
+
+silenceFilter
+  :: Seconds -> Double -> Filter
+silenceFilter duration threshold
+  = Filter ["silence", "1", show duration, show threshold]
+
+trimFilter
+  :: Seconds -> Seconds -> Filter
+trimFilter offset duration
+  = Filter ["trim", show offset, show duration]
+
+
+run
+  :: Source -> Destination -> Filter -> IO (Async ())
+run source destination filter_ = execute "sox" args
+  where
+    args = unSource source
+        <> unDestination destination
+        <> unFilter filter_
+
+run_
+  :: Source -> Destination -> Filter -> IO ()
+run_ source destination filter_ = do
+  thread <- run source destination filter_
   wait thread
-
-
-rec
-  :: Sox
-rec = Sox
-  ["--default-device"]  -- the microphone
-  []
-
-file
-  :: FilePath -> Sox
-file filePath = Sox [filePath] []
-
-files
-  :: [FilePath] -> Sox
-files filePaths = Sox ("-M":filePaths) []
-
-filter
-  :: Filter -> Sox -> Sox
-filter xs = over soxFilter (++ xs)
-
-
-getDuration
-  :: FilePath -> IO Seconds
-getDuration filePath = readProcessLn "soxi" ["-D", filePath]
-
-getChannelCount
-  :: FilePath -> IO ChannelCount
-getChannelCount filePath = readProcessLn "soxi" ["-c", filePath]
-
-getSampleRate
-  :: FilePath -> IO Hz
-getSampleRate filePath = readProcessLn "soxi" ["-r", filePath]

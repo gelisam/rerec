@@ -1,10 +1,28 @@
-{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances, RecordWildCards, TemplateHaskell, TypeSynonymInstances #-}
 module ReRec.Audio where
 
 import Control.Concurrent.Async
+import Control.Lens
 
-import ReRec.Sox (Sox, runSox, runSox_)
 import qualified ReRec.Sox as Sox
+
+
+data Sox = Sox
+  { _soxSource :: Sox.Source
+  , _soxFilter :: Sox.Filter
+  }
+
+makeLenses ''Sox
+
+runSox
+  :: Sox -> Sox.Destination -> IO (Async ())
+runSox (Sox {..}) destination = Sox.run _soxSource destination _soxFilter
+
+runSox_
+  :: Sox -> Sox.Destination -> IO ()
+runSox_ sox destination = do
+  thread <- runSox sox destination
+  wait thread
 
 
 class Audio a where
@@ -15,10 +33,10 @@ class Audio a where
 
 instance Audio FilePath where
   load = pure
-  toSox = Sox.file
+  toSox filePath = Sox (Sox.fileSource filePath) mempty
 
 instance Audio Sox where
-  load = pure . Sox.file
+  load = pure . toSox
   toSox = id
 
 
@@ -27,7 +45,9 @@ record
   :: Audio a
   => FilePath -> IO (Async (), Async a)
 record filePath = do
-  recordingThread <- runSox Sox.rec filePath
+  recordingThread <- Sox.run Sox.microphoneSource
+                             (Sox.fileDestination filePath)
+                             mempty
   loadingThread <- async $ do
     wait recordingThread
     load filePath
@@ -36,12 +56,12 @@ record filePath = do
 save
   :: Audio a
   => FilePath -> a -> IO ()
-save filePath x = runSox_ (toSox x) filePath
+save filePath x = runSox_ (toSox x) (Sox.fileDestination filePath)
 
 play
   :: Audio a
   => a -> IO (Async ())
-play x = runSox (toSox x) "--default-device"
+play x = runSox (toSox x) Sox.speakersDestination
 
 play_
   :: Audio a
