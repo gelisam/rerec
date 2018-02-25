@@ -6,12 +6,13 @@ module ReRec.Sox where
 import Control.Concurrent.Async
 import Data.Foldable
 import Data.List
-import Data.Map (Map)
 import Data.Semigroup
-import qualified Data.Map as Map
 
 import System.Process.Async
+
+import ReRec.ChannelMap (ChannelMap(..))
 import ReRec.Types
+import qualified ReRec.ChannelMap as ChannelMap
 
 
 newtype Source = Source
@@ -61,21 +62,13 @@ speakersDestination = Destination ["--default-device"]
 
 
 delayFilter
-  :: Map Channel Seconds -> Filter
-delayFilter (Map.null -> True) = Filter []
-delayFilter delays = Filter
-                   $ "delay"
-                   : map (show . delay) [1..lastChannel]
-  where
-    lastChannel :: Channel
-    lastChannel = maximum . Map.keys $ delays
-
-    delay :: Channel -> Seconds
-    delay channel = Map.findWithDefault 0 channel delays
+  :: ChannelMap Seconds -> Filter
+delayFilter (ChannelMap.null -> True) = Filter []
+delayFilter delays = Filter $ "delay" : map show (unChannelMap delays)
 
 remixFilter
-  :: Map Channel Channel -> Filter
-remixFilter (Map.null -> True) = Filter []
+  :: ChannelMap Channel -> Filter
+remixFilter (ChannelMap.null -> True) = Filter []
 remixFilter destinations = Filter
                          $ "remix"
                          : "-m"  -- "manual" volumes, otherwise it gets reduced
@@ -85,9 +78,9 @@ remixFilter destinations = Filter
     lastChannel = maximum . toList $ destinations
 
     remix :: Channel -> [Channel]
-    remix destination = toList
-                      . Map.keys
-                      . Map.filter (== destination)
+    remix destination = map fst
+                      . filter ((== destination) . snd)
+                      . ChannelMap.toList
                       $ destinations
 
     encode :: [Channel] -> String
