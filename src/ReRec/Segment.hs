@@ -1,7 +1,8 @@
-{-# LANGUAGE RecordWildCards, TemplateHaskell, TypeFamilies #-}
+{-# LANGUAGE RecordWildCards, TemplateHaskell, TypeFamilies, ViewPatterns #-}
 module ReRec.Segment where
 
 import Control.Lens
+import Data.Map (Map)
 import Data.Semigroup
 import qualified Data.Map as Map
 
@@ -41,31 +42,23 @@ instance Audio Segment where
             <> silentSourceMatchingAudioFile _segmentFile
 
       filter_ :: Sox.Filter
-      filter_ = silenceIfNeeded
+      filter_ = offsetsFilter offsets
              <> trim
              <> collapseChannels
 
-      silenceIfNeeded :: Sox.Filter
-      silenceIfNeeded | needsSilence = addSilence
-                      | otherwise    = mempty
+      offsets :: Map Channel Seconds
+      offsets = Map.fromList
+              . flip fmap channels $ \channel
+             -> (channel, offset)
         where
-          silenceDuration :: Seconds
-          silenceDuration = max 0 (negate _segmentOffset)
-
-          needsSilence :: Bool
-          needsSilence = silenceDuration > 0
-
           channelCount :: ChannelCount
           channelCount = view audioFileChannelCount _segmentFile
 
           channels :: [Channel]
           channels = [1..channelCount]
 
-          addSilence :: Sox.Filter
-          addSilence = Sox.delayFilter
-                     . Map.fromList
-                     . flip fmap channels $ \channel
-                    -> (channel, silenceDuration)
+          offset :: Seconds
+          offset = max 0 (negate _segmentOffset)
 
       trim :: Sox.Filter
       trim = Sox.trimFilter offset _segmentDuration
@@ -94,3 +87,20 @@ instance Audio Segment where
 silentSourceMatchingAudioFile :: AudioFile -> Sox.Source
 silentSourceMatchingAudioFile = Sox.silentSourceMatchingSampleRate
                               . view audioFileSampleRate
+
+-- all the offsets must be non-negative
+offsetsFilter :: Map Channel Seconds -> Sox.Filter
+offsetsFilter (Map.null -> True) = mempty
+offsetsFilter offsets = Sox.delayFilter
+                      . Map.fromList
+                      . flip fmap channels $ \channel
+                     -> (channel, channelOffset channel)
+  where
+    channelCount :: ChannelCount
+    channelCount = maximum . Map.keys $ offsets
+
+    channels :: [Channel]
+    channels = [1..channelCount]
+
+    channelOffset :: Channel -> Seconds
+    channelOffset channel = Map.findWithDefault 0 channel offsets
