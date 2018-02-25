@@ -10,7 +10,7 @@ import qualified ReRec.Sox as Sox
 data Sox = Sox
   { _soxSource :: Sox.Source
   , _soxFilter :: Sox.Filter
-  }
+  } deriving Show
 
 makeLenses ''Sox
 
