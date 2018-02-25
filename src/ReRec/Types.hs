@@ -1,4 +1,7 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module ReRec.Types where
+
+import Control.Lens
 
 
 -- | numbered from 1
@@ -9,4 +12,15 @@ type ChannelCount = Int
 
 type Hz = Int
 
-type Seconds = Double
+newtype Seconds = Seconds
+  { unSeconds :: Double
+  } deriving (Eq, Fractional, Num, Ord)
+
+
+instance Read Seconds where
+  readsPrec p = over (each . _1) Seconds . readsPrec p
+
+instance Show Seconds where
+  show (Seconds 0) = "0"  -- without this, @max 0 (-1)@ would give "-0",
+                          -- which sox interprets differently from "0"
+  show (Seconds x) = show x
