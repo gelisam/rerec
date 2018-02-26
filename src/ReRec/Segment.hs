@@ -42,15 +42,16 @@ instance Audio Segment where
             <> silentSourceMatchingAudioFile _segmentFile
 
       filter_ :: Sox.Filter
-      filter_ = Sox.delayFilter (segmentOffsets segment)
-             <> trim
+      filter_ = Sox.delayFilter offsets
+             <> Sox.trimFilter offset _segmentDuration
              <> collapseChannels
 
-      trim :: Sox.Filter
-      trim = Sox.trimFilter offset _segmentDuration
-        where
-          offset :: Seconds
-          offset = max 0 _segmentOffset
+      offsets :: ChannelMap Seconds
+      offsets = segmentOffsets segment
+             <> silentSourceOffsets
+
+      offset :: Seconds
+      offset = max 0 _segmentOffset
 
       -- otherwise the silentSource will be saved as an extra channel
       collapseChannels :: Sox.Filter
@@ -82,3 +83,6 @@ segmentOffsets (Segment {..}) = ChannelMap.eachChannel channelCount
 
     offset :: Seconds
     offset = max 0 (negate _segmentOffset)
+
+silentSourceOffsets :: ChannelMap Seconds
+silentSourceOffsets = ChannelMap.eachChannel 1 $ \_ -> 0

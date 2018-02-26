@@ -6,12 +6,14 @@
 -- > import qualified ReRec.ChannelMap as ChannelMap
 module ReRec.ChannelMap where
 
+import Data.Semigroup
+
 import ReRec.Types
 
 
 newtype ChannelMap a = ChannelMap
   { unChannelMap :: [a]
-  } deriving (Foldable, Functor, Monoid, Show, Traversable)
+  } deriving (Foldable, Functor, Monoid, Semigroup,Show, Traversable)
 
 eachChannel :: ChannelCount -> (Channel -> a) -> ChannelMap a
 eachChannel channelCount f = ChannelMap $ map f [1..channelCount]
