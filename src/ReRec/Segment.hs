@@ -35,25 +35,16 @@ instance Audio Segment where
     audioFile <- load filePath
     let duration = view audioFileDuration audioFile
     pure $ Segment audioFile 0 duration
-  toSox (Segment {..}) = Sox source filter_
+  toSox segment@(Segment {..}) = Sox source filter_
     where
       source :: Sox.Source
       source = audioFileSource _segmentFile
             <> silentSourceMatchingAudioFile _segmentFile
 
       filter_ :: Sox.Filter
-      filter_ = Sox.delayFilter offsets
+      filter_ = Sox.delayFilter (segmentOffsets segment)
              <> trim
              <> collapseChannels
-
-      offsets :: ChannelMap Seconds
-      offsets = ChannelMap.eachChannel channelCount $ \_ -> offset
-        where
-          channelCount :: ChannelCount
-          channelCount = view audioFileChannelCount _segmentFile
-
-          offset :: Seconds
-          offset = max 0 (negate _segmentOffset)
 
       trim :: Sox.Filter
       trim = Sox.trimFilter offset _segmentDuration
@@ -81,3 +72,13 @@ instance Audio Segment where
 silentSourceMatchingAudioFile :: AudioFile -> Sox.Source
 silentSourceMatchingAudioFile = Sox.silentSourceMatchingSampleRate
                               . view audioFileSampleRate
+
+segmentOffsets :: Segment -> ChannelMap Seconds
+segmentOffsets (Segment {..}) = ChannelMap.eachChannel channelCount
+                              $ \_ -> offset
+  where
+    channelCount :: ChannelCount
+    channelCount = view audioFileChannelCount _segmentFile
+
+    offset :: Seconds
+    offset = max 0 (negate _segmentOffset)
