@@ -7,7 +7,7 @@ import Data.Semigroup
 import Camera
 import ReRec.Audio
 import ReRec.AudioFile
-import ReRec.ChannelMap (ChannelMap)
+import ReRec.ChannelMap (ChannelMap(..))
 import ReRec.Types
 import qualified ReRec.ChannelMap as ChannelMap
 import qualified ReRec.Sox as Sox
@@ -15,7 +15,7 @@ import qualified ReRec.Sox as Sox
 
 -- |
 -- A portion of an audio clip, except that the selected segment need not be
--- completely included within said clip. If the offset is negative or the
+-- completely included within said clip. If the offset is positive or the
 -- duration extends beyond the clip's, the remainder will be filled with
 -- silence.
 data Segment = Segment
@@ -28,7 +28,7 @@ makeLenses ''Segment
 
 instance Camera Segment where
   type Vector Segment = Seconds
-  moveCamera dx = over segmentOffset (+ dx)
+  moveWorld dx = over segmentOffset (+ dx)
 
 instance Audio Segment where
   load filePath = do
@@ -42,16 +42,27 @@ instance Audio Segment where
             <> silentSourceMatchingAudioFile _segmentFile
 
       filter_ :: Sox.Filter
-      filter_ = Sox.delayFilter offsets
-             <> Sox.trimFilter offset _segmentDuration
+      filter_ = Sox.delayFilter adjustedOffsets         -- for positive offset
+             <> Sox.trimFilter offset _segmentDuration  -- for negative offset
              <> Sox.remixFilter remixChannels
 
-      offsets :: ChannelMap Seconds
-      offsets = segmentOffsets segment
-             <> silentSourceOffsets
+      channelOffsets :: ChannelMap Seconds
+      channelOffsets = segmentOffsets segment
+                    <> silentSourceOffsets
+
+      mostNegativeOffset :: Seconds
+      mostNegativeOffset = minimum
+                         . (0:)
+                         . filter (< 0)
+                         . unChannelMap
+                         $ channelOffsets
+
+      -- make all the offsets non-negative
+      adjustedOffsets :: ChannelMap Seconds
+      adjustedOffsets = (+ negate mostNegativeOffset) <$> channelOffsets
 
       offset :: Seconds
-      offset = max 0 _segmentOffset
+      offset = negate mostNegativeOffset
 
       -- otherwise the silentSource will be saved as an extra channel
       remixChannels :: ChannelMap Channel
@@ -70,7 +81,7 @@ segmentOffsets (Segment {..}) = ChannelMap.eachChannel channelCount
     channelCount = view audioFileChannelCount _segmentFile
 
     offset :: Seconds
-    offset = max 0 (negate _segmentOffset)
+    offset = _segmentOffset
 
 silentSourceOffsets :: ChannelMap Seconds
 silentSourceOffsets = ChannelMap.eachChannel 1 $ \_ -> 0
