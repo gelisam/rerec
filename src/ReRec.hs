@@ -1,6 +1,11 @@
 module ReRec
-    ( someFunc
-    ) where
+  ( Audio(load), record, save, play, play_
+  , AudioVector, audioVectorDuration, silence, followedBy, overlap
+  , AutoTrim(..)
+  , Seconds(..)
+  ) where
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+import ReRec.Audio
+import ReRec.AudioVector
+import ReRec.AutoTrim
+import ReRec.Types
