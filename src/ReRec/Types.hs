@@ -2,6 +2,7 @@
 module ReRec.Types where
 
 import Control.Lens
+import Text.Printf
 
 
 -- | numbered from 1
@@ -23,4 +24,4 @@ instance Read Seconds where
 instance Show Seconds where
   show (Seconds 0) = "0"  -- without this, @max 0 (-1)@ would give "-0",
                           -- which sox interprets differently from "0"
-  show (Seconds x) = show x
+  show (Seconds x) = printf "%f" x
