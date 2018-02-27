@@ -53,3 +53,4 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - rerec
+    - directory
