@@ -40,6 +40,7 @@ instance Audio Sox where
   toSox = id
 
 
+-- |
 -- cancel the 'Async ()' to stop the recording
 record
   :: Audio a
