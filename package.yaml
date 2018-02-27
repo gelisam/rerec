@@ -35,7 +35,17 @@ library:
 executables:
   rerec:
     main:                Main.hs
-    source-dirs:         app
+    source-dirs:         app/rerec
+    ghc-options:
+    - -Wall
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - rerec
+  interplay:
+    main:                Main.hs
+    source-dirs:         app/interplay
     ghc-options:
     - -Wall
     - -threaded
