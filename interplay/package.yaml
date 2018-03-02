@@ -22,6 +22,7 @@ dependencies:
 - base >= 4.7 && < 5
 - async
 - containers
+- directory
 - lens
 - stm
 - text
@@ -43,4 +44,3 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - interplay
-    - directory
