@@ -1,13 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
-module ReRec.AudioFile where
+module Lib.Interplay.AudioFile where
 
 import Control.Lens
 
 import System.Process.Extra
 
-import ReRec.Audio
-import ReRec.Types
-import qualified ReRec.Sox as Sox
+import Lib.Interplay.Audio
+import Lib.Interplay.Types
+import qualified Lib.Interplay.Sox as Sox
 
 
 data AudioFile = AudioFile

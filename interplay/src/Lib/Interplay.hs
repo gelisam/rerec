@@ -1,4 +1,4 @@
-module ReRec
+module Lib.Interplay
   ( AudioVector, audioVectorDuration, silence, followedBy, overlap
   , AutoTrim(..)
   , Seconds(..)
@@ -7,10 +7,10 @@ module ReRec
 
 import Control.Concurrent.Async
 
-import ReRec.AudioVector
-import ReRec.AutoTrim
-import ReRec.Types
-import qualified ReRec.Audio as Audio
+import Lib.Interplay.AudioVector
+import Lib.Interplay.AutoTrim
+import Lib.Interplay.Types
+import qualified Lib.Interplay.Audio as Audio
 
 
 load :: FilePath -> IO AudioVector

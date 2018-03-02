@@ -1,5 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-module ReRec.Types where
+module Lib.Interplay.Types where
 
 import Control.Lens
 import Text.Printf

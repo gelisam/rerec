@@ -7,7 +7,7 @@ import System.Exit
 import Text.Printf
 import Text.Read
 
-import ReRec
+import Lib.Interplay
 
 
 parseAudioVector :: String -> IO (Maybe AudioVector)

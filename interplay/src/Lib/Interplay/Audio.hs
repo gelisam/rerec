@@ -1,10 +1,10 @@
 {-# LANGUAGE FlexibleInstances, RecordWildCards, TemplateHaskell, TypeSynonymInstances #-}
-module ReRec.Audio where
+module Lib.Interplay.Audio where
 
 import Control.Concurrent.Async
 import Control.Lens
 
-import qualified ReRec.Sox as Sox
+import qualified Lib.Interplay.Sox as Sox
 
 
 data Sox = Sox

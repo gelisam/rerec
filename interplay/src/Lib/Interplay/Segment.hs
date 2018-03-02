@@ -1,16 +1,16 @@
 {-# LANGUAGE RecordWildCards, TemplateHaskell, TypeFamilies, ViewPatterns #-}
-module ReRec.Segment where
+module Lib.Interplay.Segment where
 
 import Control.Lens
 import Data.Semigroup
 
 import Camera
-import ReRec.Audio
-import ReRec.AudioFile
-import ReRec.ChannelMap (ChannelMap(..))
-import ReRec.Types
-import qualified ReRec.ChannelMap as ChannelMap
-import qualified ReRec.Sox as Sox
+import Lib.Interplay.Audio
+import Lib.Interplay.AudioFile
+import Lib.Interplay.ChannelMap (ChannelMap(..))
+import Lib.Interplay.Types
+import qualified Lib.Interplay.ChannelMap as ChannelMap
+import qualified Lib.Interplay.Sox as Sox
 
 
 -- |

@@ -20,12 +20,7 @@ description:         Please see the README on Github at <https://github.com/geli
 
 dependencies:
 - base >= 4.7 && < 5
-- async
-- containers
-- lens
-- stm
-- text
-- typed-process
+- interplay
 
 library:
   source-dirs: src
@@ -34,8 +29,8 @@ library:
 
 executables:
   rerec:
-    main:                Main.hs
-    source-dirs:         app/rerec
+    main:                main.hs
+    source-dirs:         app
     ghc-options:
     - -Wall
     - -threaded
@@ -43,14 +38,3 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - rerec
-  interplay:
-    main:                Main.hs
-    source-dirs:         app/interplay
-    ghc-options:
-    - -Wall
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - rerec
-    - directory
