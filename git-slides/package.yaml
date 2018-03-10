@@ -21,6 +21,8 @@ description:         Please see the README on Github at <https://github.com/geli
 dependencies:
 - base >= 4.7 && < 5
 - gitlib
+- lifted-async
+- monad-control
 
 library:
   source-dirs: src
