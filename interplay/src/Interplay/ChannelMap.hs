@@ -2,13 +2,13 @@
 -- |
 -- This module is intended to be imported half-qualified, like "Data.Map":
 --
--- > import Lib.Interplay.ChannelMap (ChannelMap(..))
--- > import qualified Lib.Interplay.ChannelMap as ChannelMap
-module Lib.Interplay.ChannelMap where
+-- > import Interplay.ChannelMap (ChannelMap(..))
+-- > import qualified Interplay.ChannelMap as ChannelMap
+module Interplay.ChannelMap where
 
 import Data.Semigroup
 
-import Lib.Interplay.Types
+import Interplay.Types
 
 
 newtype ChannelMap a = ChannelMap

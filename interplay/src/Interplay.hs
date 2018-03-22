@@ -1,4 +1,4 @@
-module Lib.Interplay
+module Interplay
   ( AudioVector, audioVectorDuration, silence, followedBy, overlap
   , AutoTrim(..)
   , Seconds(..)
@@ -7,10 +7,10 @@ module Lib.Interplay
 
 import Control.Concurrent.Async
 
-import Lib.Interplay.AudioVector
-import Lib.Interplay.AutoTrim
-import Lib.Interplay.Types
-import qualified Lib.Interplay.Audio as Audio
+import Interplay.AudioVector
+import Interplay.AutoTrim
+import Interplay.Types
+import qualified Interplay.Audio as Audio
 
 
 load :: FilePath -> IO AudioVector

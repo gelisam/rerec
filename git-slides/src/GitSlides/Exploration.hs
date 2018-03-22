@@ -1,11 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
-module Lib.GitSlides.Exploration where
+module GitSlides.Exploration where
 
 import Data.List.NonEmpty (NonEmpty((:|)))
 import Git.Types
 
 import Git.Commit.Extra
-import Lib.GitSlides.Types
+import GitSlides.Types
 
 
 -- exploration stops if a merge commit is encountered, or otherwise at the initial commit.

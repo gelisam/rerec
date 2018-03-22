@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts, LambdaCase, ScopedTypeVariables #-}
-module Lib.GitSlides.Navigation where
+module GitSlides.Navigation where
 
 import Control.Concurrent.Async.Lifted.Safe
 import Control.Monad.Trans.Control
@@ -9,8 +9,8 @@ import Git.Types
 
 import Control.Concurrent.Async.Lifted.Safe.Extra
 import Git.Commit.Extra
-import Lib.GitSlides.Types
-import Lib.GitSlides.Exploration
+import GitSlides.Types
+import GitSlides.Exploration
 
 
 -- partial if a branch doesn't resolve to a commit.

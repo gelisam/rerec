@@ -1,16 +1,16 @@
 {-# LANGUAGE RecordWildCards, TemplateHaskell, TypeFamilies #-}
-module Lib.Interplay.AudioVector where
+module Interplay.AudioVector where
 
 import Control.Lens
 import Data.Semigroup
 
 import Camera
-import Lib.Interplay.Audio
-import Lib.Interplay.AudioFile
-import Lib.Interplay.ChannelMap
-import Lib.Interplay.Segment
-import Lib.Interplay.Types
-import qualified Lib.Interplay.Sox as Sox
+import Interplay.Audio
+import Interplay.AudioFile
+import Interplay.ChannelMap
+import Interplay.Segment
+import Interplay.Types
+import qualified Interplay.Sox as Sox
 
 
 -- |

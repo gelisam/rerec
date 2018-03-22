@@ -1,4 +1,4 @@
-module Lib.GitSlides.File where
+module GitSlides.File where
 
 import Control.Monad
 import Data.Text.Encoding
@@ -10,7 +10,7 @@ import qualified Data.List.NonEmpty as NonEmpty
 import qualified Data.ByteString.Lazy as Lazy
 import qualified Data.Text as Text
 
-import Lib.GitSlides.Types
+import GitSlides.Types
 
 
 fileAtBlobOid

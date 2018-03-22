@@ -1,7 +1,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, LambdaCase, RecordWildCards, TemplateHaskell, ViewPatterns #-}
 -- |
 -- This module is intended to be imported qualified.
-module Lib.Interplay.Sox where
+module Interplay.Sox where
 
 import Control.Concurrent.Async
 import Data.Foldable
@@ -10,9 +10,9 @@ import Data.Semigroup
 
 import System.Process.Async
 
-import Lib.Interplay.ChannelMap (ChannelMap(..))
-import Lib.Interplay.Types
-import qualified Lib.Interplay.ChannelMap as ChannelMap
+import Interplay.ChannelMap (ChannelMap(..))
+import Interplay.Types
+import qualified Interplay.ChannelMap as ChannelMap
 
 
 newtype Source = Source

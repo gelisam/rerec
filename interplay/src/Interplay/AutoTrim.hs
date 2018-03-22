@@ -1,12 +1,12 @@
 {-# LANGUAGE RecordWildCards #-}
-module Lib.Interplay.AutoTrim where
+module Interplay.AutoTrim where
 
 import Control.Lens
 import Data.Monoid
 
-import Lib.Interplay.Audio
-import Lib.Interplay.Types
-import qualified Lib.Interplay.Sox as Sox
+import Interplay.Audio
+import Interplay.Types
+import qualified Interplay.Sox as Sox
 
 
 newtype AutoTrim a = AutoTrim

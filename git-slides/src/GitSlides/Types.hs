@@ -1,4 +1,4 @@
-module Lib.GitSlides.Types where
+module GitSlides.Types where
 
 import Data.List.NonEmpty
 import Git.Types
