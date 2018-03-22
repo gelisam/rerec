@@ -5,6 +5,6 @@ module GitSlides
   , fileAtSlide
   ) where
 
-import GitSlides.File
+import GitSlides.File.Read
 import GitSlides.Navigation
 import GitSlides.Types

@@ -1,4 +1,4 @@
-module GitSlides.File where
+module GitSlides.File.Read where
 
 import Control.Monad
 import Data.Text.Encoding
