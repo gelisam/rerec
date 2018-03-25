@@ -23,6 +23,7 @@ dependencies:
 - bytestring
 - filepath
 - gitlib
+- lens
 - lifted-async
 - monad-control
 - text
