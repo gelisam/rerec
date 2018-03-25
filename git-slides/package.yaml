@@ -27,6 +27,7 @@ dependencies:
 - lifted-async
 - monad-control
 - text
+- transformers
 
 library:
   source-dirs: src

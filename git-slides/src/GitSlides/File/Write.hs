@@ -1,8 +1,11 @@
 module GitSlides.File.Write where
 
 import Control.Lens
+import Control.Monad.Trans.Class
+import Control.Monad.Trans.State
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Text.Encoding
+import Data.Traversable
 import Git.Tree.Builder
 import Git.Types
 import qualified Data.ByteString.Lazy as Lazy
@@ -44,8 +47,21 @@ overwriteAtCommit filePath contents = traverseOf commitTreeL
 overwriteAtSlide
   :: MonadGit r m
   => FilePath -> Lazy.ByteString -> Slide r -> m (Slide r)
-overwriteAtSlide filePath contents (commit :| commits) = do
-  commit' <- overwriteAtCommit filePath contents commit
+overwriteAtSlide filePath contents (commit0 :| commits1Z) = do
+  commit0' <- overwriteAtCommit filePath contents commit0
 
-  -- TODO: rebase commits on top of commit'
-  pure (commit' :| commits)
+  -- we are changing the history, so all the later slides need to be rewritten
+  commits1Z' <- flip evalStateT commit0' $ do
+    for commits1Z $ \commitB -> do
+      commitA <- get
+      commitB' <- lift $ createCommit [commitOid commitA]
+                                      (commitTree commitB)
+                                      (commitAuthor commitB)
+                                      (commitCommitter commitB)
+                                      (commitLog commitB)
+                                      Nothing  -- TODO: overwrite branch
+      put commitB'
+      pure commitB'
+
+
+  pure (commit0' :| commits1Z')
