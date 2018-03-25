@@ -44,10 +44,10 @@ overwriteAtCommit
 overwriteAtCommit filePath contents = traverseOf commitTreeL
                                     $ overwriteAtTreeOid filePath contents
 
-overwriteAtSlide
+overwriteAtSlideHelper
   :: MonadGit r m
-  => FilePath -> Lazy.ByteString -> Slide r -> m (Slide r)
-overwriteAtSlide filePath contents (commit0 :| commits1Z) = do
+  => Maybe RefName -> FilePath -> Lazy.ByteString -> Slide r -> m (Slide r)
+overwriteAtSlideHelper branchMay filePath contents (commit0 :| commits1Z) = do
   commit0' <- overwriteAtCommit filePath contents commit0
 
   -- we are changing the history, so all the later slides need to be rewritten
@@ -59,9 +59,20 @@ overwriteAtSlide filePath contents (commit0 :| commits1Z) = do
                                       (commitAuthor commitB)
                                       (commitCommitter commitB)
                                       (commitLog commitB)
-                                      Nothing  -- TODO: overwrite branch
+                                      branchMay
       put commitB'
       pure commitB'
-
-
   pure (commit0' :| commits1Z')
+
+overwriteAtSlide
+  :: MonadGit r m
+  => FilePath -> Lazy.ByteString -> Slide r -> m (Slide r)
+overwriteAtSlide = overwriteAtSlideHelper Nothing
+
+overwriteAtSlideshow
+  :: MonadGit r m
+  => FilePath -> Lazy.ByteString -> Slideshow r -> m (Slideshow r)
+overwriteAtSlideshow filePath contents slideshow = do
+  let branch = view slideshowBranch slideshow
+  forOf slideshowCurrentSlide slideshow $ \slide -> do
+    overwriteAtSlideHelper (Just branch) filePath contents slide
