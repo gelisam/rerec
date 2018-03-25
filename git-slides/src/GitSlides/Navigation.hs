@@ -18,7 +18,7 @@ import GitSlides.Exploration
 -- non-deterministic if multiple branches descend from HEAD.
 currentSlide
   :: forall r m. (Forall (Pure m), MonadBaseControl IO m, MonadGit r m)
-  => m (Maybe (Slide r))
+  => m (Maybe (Slideshow r))
 currentSlide = do
   currentCommit >>= \case
     Just commit -> do

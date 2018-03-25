@@ -25,7 +25,8 @@ exploreSlidesUntil halfZipper@(commit :| commits) ancestor
 -- Nothing if the ancestor is not found before then.
 exploreBranchUntil
   :: MonadGit r m
-  => RefName -> Commit r -> m (Maybe (Slide r))
+  => RefName -> Commit r -> m (Maybe (Slideshow r))
 exploreBranchUntil branch ancestor = do
   branchHead <- resolveReferenceToCommit branch
-  exploreSlidesUntil (branchHead :| []) ancestor
+  slideMay <- exploreSlidesUntil (branchHead :| []) ancestor
+  pure (Slideshow branch <$> slideMay)
