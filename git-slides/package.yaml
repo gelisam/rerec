@@ -26,6 +26,7 @@ dependencies:
 - lens
 - lifted-async
 - monad-control
+- tagged
 - text
 - transformers
 

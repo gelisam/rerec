@@ -4,6 +4,7 @@ import Control.Lens
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.State
 import Data.List.NonEmpty (NonEmpty(..))
+import Data.Tagged
 import Data.Text.Encoding
 import Data.Traversable
 import Git.Tree.Builder
@@ -12,6 +13,7 @@ import qualified Data.ByteString.Lazy as Lazy
 import qualified Data.Text as Text
 
 import Git.Types.Extra
+import GitSlides.Navigation
 import GitSlides.Types
 
 
@@ -44,10 +46,10 @@ overwriteAtCommit
 overwriteAtCommit filePath contents = traverseOf commitTreeL
                                     $ overwriteAtTreeOid filePath contents
 
-overwriteAtSlideHelper
+overwriteAtSlide
   :: MonadGit r m
-  => Maybe RefName -> FilePath -> Lazy.ByteString -> Slide r -> m (Slide r)
-overwriteAtSlideHelper branchMay filePath contents (commit0 :| commits1Z) = do
+  => FilePath -> Lazy.ByteString -> Slide r -> m (Slide r)
+overwriteAtSlide filePath contents (commit0 :| commits1Z) = do
   commit0' <- overwriteAtCommit filePath contents commit0
 
   -- we are changing the history, so all the later slides need to be rewritten
@@ -59,20 +61,17 @@ overwriteAtSlideHelper branchMay filePath contents (commit0 :| commits1Z) = do
                                       (commitAuthor commitB)
                                       (commitCommitter commitB)
                                       (commitLog commitB)
-                                      branchMay
+                                      Nothing
       put commitB'
       pure commitB'
-  pure (commit0' :| commits1Z')
 
-overwriteAtSlide
-  :: MonadGit r m
-  => FilePath -> Lazy.ByteString -> Slide r -> m (Slide r)
-overwriteAtSlide = overwriteAtSlideHelper Nothing
+  pure (commit0' :| commits1Z')
 
 overwriteAtSlideshow
   :: MonadGit r m
   => FilePath -> Lazy.ByteString -> Slideshow r -> m (Slideshow r)
-overwriteAtSlideshow filePath contents slideshow = do
-  let branch = view slideshowBranch slideshow
-  forOf slideshowCurrentSlide slideshow $ \slide -> do
-    overwriteAtSlideHelper (Just branch) filePath contents slide
+overwriteAtSlideshow filePath contents (Slideshow branch currentSlide_) = do
+  currentSlide' <- overwriteAtSlide filePath contents currentSlide_
+  let lastCommit :| _ = lastSlide currentSlide'
+  updateReference branch . RefObj . untag . commitOid $ lastCommit
+  pure $ Slideshow branch currentSlide'
