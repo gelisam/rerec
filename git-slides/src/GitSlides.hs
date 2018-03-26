@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts, LambdaCase, ScopedTypeVariables #-}
 module GitSlides
   ( Slideshow
-  , currentSlideshow, prevSlideshow, nextSlideshow, lastSlideshow
+  , firstSlideshow, prevSlideshow, currentSlideshow, nextSlideshow, lastSlideshow
   , fileAtSlideshow, overwriteAtSlideshow
   ) where
 

@@ -41,6 +41,19 @@ currentSlideshow = do
     Nothing -> pure Nothing
 
 
+firstSlide
+  :: MonadGit r m
+  => Slide r -> m (Slide r)
+firstSlide slide = prevSlide slide >>= \case
+  Nothing     -> pure slide
+  Just slide' -> firstSlide slide'
+
+firstSlideshow
+  :: MonadGit r m
+  => Slideshow r -> m (Slideshow r)
+firstSlideshow = traverseOf slideshowCurrentSlide firstSlide
+
+
 prevSlide
   :: MonadGit r m
   => Slide r -> m (Maybe (Slide r))
@@ -68,15 +81,11 @@ nextSlideshow = runIdentity
               . traverseOf slideshowCurrentSlide (MaybeT . Identity . nextSlide)
 
 
--- partial if the branch doesn't resolve to a commit.
 lastSlide
-  :: MonadGit r m
-  => RefName -> m (Slide r)
-lastSlide branch = do
-  commit <- resolveReferenceToCommit branch
-  pure (commit :| [])
+  :: Slide r -> Slide r
+lastSlide (_ :| commit : commits) = lastSlide (commit :| commits)
+lastSlide commits = commits
 
 lastSlideshow
-  :: MonadGit r m
-  => RefName -> m (Slideshow r)
-lastSlideshow branch = Slideshow branch <$> lastSlide branch
+  :: Slideshow r -> Slideshow r
+lastSlideshow = over slideshowCurrentSlide lastSlide
