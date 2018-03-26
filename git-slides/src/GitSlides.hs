@@ -1,8 +1,8 @@
 {-# LANGUAGE FlexibleContexts, LambdaCase, ScopedTypeVariables #-}
 module GitSlides
-  ( Slide
-  , currentSlide, prevSlide, nextSlide, lastSlide
-  , fileAtSlide, overwriteAtSlide
+  ( Slideshow
+  , currentSlideshow, prevSlideshow, nextSlideshow, lastSlideshow
+  , fileAtSlideshow, overwriteAtSlideshow
   ) where
 
 import GitSlides.File.Read

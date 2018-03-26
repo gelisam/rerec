@@ -1,5 +1,6 @@
 module GitSlides.File.Read where
 
+import Control.Lens
 import Control.Monad
 import Data.Text.Encoding
 import Git.Blob
@@ -61,3 +62,8 @@ fileAtSlide
   :: MonadGit r m
   => FilePath -> Slide r -> m (Maybe Lazy.ByteString)
 fileAtSlide filePath = fileAtCommit filePath . NonEmpty.head
+
+fileAtSlideshow
+  :: MonadGit r m
+  => FilePath -> Slideshow r -> m (Maybe Lazy.ByteString)
+fileAtSlideshow filePath = fileAtSlide filePath . view slideshowCurrentSlide
